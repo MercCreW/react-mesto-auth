@@ -1,0 +1,16 @@
+.auth__header-button{
+    position: relative;
+    transform: translate(-50%,0);
+    width: 89px;
+    height: 17px;
+    font-size: 14px;
+    padding: 0px;
+    color: white;
+    background: none;
+    padding: 0;
+    border:0;
+}
+
+.auth__header-button:hover {
+    opacity: .6;
+}

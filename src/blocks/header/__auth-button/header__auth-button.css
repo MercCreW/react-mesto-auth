@@ -1,0 +1,15 @@
+.header__auth-button{
+    position: relative;
+    width: 89px;
+    height: 17px;
+    font-size: 14px;
+    padding: 0px;
+    color: white;
+    background: none;
+    border:0;
+
+}
+
+.header__auth-button:hover {
+    opacity: .6;
+}

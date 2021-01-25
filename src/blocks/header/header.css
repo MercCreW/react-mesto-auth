@@ -1,7 +1,9 @@
 @import url("./__logo/header__logo.css");
+@import url("./__auth-button/header__auth-button.css");
 
 .header{
     display:flex;
+    justify-content: space-between;
     align-items: flex-start;
     max-width: 320px;
     min-height: 3.437rem;

@@ -1,5 +1,8 @@
 import React from 'react';
+import {Route, Redirect, Switch} from 'react-router-dom';
 import {CurrentUserContext} from '../contexts/CurrentUserContext';
+import Login from './Login';
+import Register from './Register';
 import Header from './Header';
 import Main from './Main';
 import PopupWithForm from './PopupWithForm';
@@ -22,7 +25,7 @@ function App() {
     const [cards, setCards] = React.useState([]);
 
     const [currentUser, setCurrentUser] = React.useState({name:'', about:'', avatar:''});
-    
+    const [loggedIn, setLoggedIn] = React.useState(false);
 
 
 
@@ -107,21 +110,18 @@ function App() {
 
 return (
     <CurrentUserContext.Provider value={currentUser} >
-        <Header />   
-            <Main 
-                onEditProfile={handleEditProfileClick}
-                onAddPlace={handleAddPlaceClick}
-                onEditAvatar={handleEditAvatarClick}
-
-                handleCardClick={handleCardClick}
-                onCardLike={handleCardLike}
-                onCardDelete={handleDeleteCard}
-                
-                cards={cards}
-                setCards={setCards}
-                onClose={closeAllPopups}
-        />
-        <Footer />
+        <Route exact path ="/asd">
+            { loggedIn ? <Redirect to="/register" /> : <Redirect to="/login" /> }
+        </Route>
+        <Route exact path="/register">
+            <Register />
+        </Route>
+ 
+        <Route exact path="/login">
+            <Login />
+        </Route>
+        <Route exact path="/">
+        <Header />
 
     <PopupWithForm 
         name='confirm' 
@@ -151,7 +151,8 @@ return (
     <ImagePopup 
         onClose={closeAllPopups}
         selectedCard={selectedCard}
-    />   
+    />
+    </Route>   
     </CurrentUserContext.Provider>
   );
 }
