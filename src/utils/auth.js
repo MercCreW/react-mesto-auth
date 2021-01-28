@@ -1,5 +1,7 @@
 export const BASE_URL = 'https://auth.nomoreparties.co';
 
+
+
 // Отправляем запрос на регистрацию
 export const register = (password, email) => fetch(`${BASE_URL}/signup`, {
   method: 'POST',
