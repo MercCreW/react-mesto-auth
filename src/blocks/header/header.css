@@ -1,5 +1,6 @@
 @import url("./__logo/header__logo.css");
-@import url("./__auth-button/header__auth-button.css");
+@import url("./__authLink/header__authLink.css");
+
 
 .header{
     display:flex;

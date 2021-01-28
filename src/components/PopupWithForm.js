@@ -9,7 +9,11 @@ function PopupWithForm(props){
             <h2 className="modal__title">{props.title}</h2>
             <form className="modal__edit-form">
                 {props.children}
+                {!props.infoTooltip ? (
                 <button id={props.idButton} className="modal__save-button" type="submit" >{props.buttonText}</button>
+                ):(
+                    <></>
+                )}
             </form>
         </div>
     </div>

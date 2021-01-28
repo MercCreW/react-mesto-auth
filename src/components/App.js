@@ -1,18 +1,25 @@
 import React from 'react';
-import {Route, Redirect, Switch} from 'react-router-dom';
+import {Route, Redirect, Switch, useHistory, useLocation} from 'react-router-dom';
 import {CurrentUserContext} from '../contexts/CurrentUserContext';
+import Header from './Header';
 import Login from './Login';
 import Register from './Register';
-import Header from './Header';
 import Main from './Main';
+import ProtectedRoute from './ProtectedRoute';
 import PopupWithForm from './PopupWithForm';
 import EditProfilePopup from './EditProfilePopup'
 import EditAvatarPopup from './EditAvatarPopup'
 import AddPlacePopup from './AddPlacePopup'
 import ImagePopup from './ImagePopup';
+import InfoTooltip from './InfoTooltip';
 import Footer from './Footer';
 import '../index.css';
 import api from '../utils/Api';
+import * as auth from '../utils/auth';
+
+import accessiblePath from '../images/access.svg';
+import notAccessiblePath from '../images/denied.svg';
+import loading from '../images/loading.svg';
 
 
 
@@ -25,8 +32,18 @@ function App() {
     const [cards, setCards] = React.useState([]);
 
     const [currentUser, setCurrentUser] = React.useState({name:'', about:'', avatar:''});
-    const [loggedIn, setLoggedIn] = React.useState(false);
 
+    const [loggedIn, setLoggedIn] = React.useState(false);
+    const [email, setEmail] = React.useState('');
+    const [isAuthInfoOpened, setAuthInfoOpened] = React.useState(false);
+    const [isInfoTooltipOpen, setInfoTooltipOpen] = React.useState(false);
+    const [message, setMessage] = React.useState({
+        iconPath: loading,
+        text: ''
+      });
+
+    const history = useHistory();
+    const location = useLocation();
 
 
     const handleEditAvatarClick = () => {
@@ -51,6 +68,53 @@ function App() {
         })
         .catch((err) => console.log(err));
     },[]);
+
+    React.useEffect(() => {
+        const jwt = localStorage.getItem('jwt');
+        if (jwt) {
+            auth.getContent(jwt)
+            .then((res) => {
+                setLoggedIn(true);
+                setEmail(res.data.email);
+                history.push('/');
+            })
+            .catch(err => console.log(err));
+        }
+    }, [history]);
+
+    function handleRegister(password, email) {
+        auth.register(escape(password), email)
+          .then(() => {
+            setMessage({ iconPath: accessiblePath, text: 'Вы успешно зарегистрировались!' });
+            history.push('/sign-in');
+          })
+          .catch((err) => setMessage({ iconPath: notAccessiblePath, text: err.message }));
+        setInfoTooltipOpen(true);
+      }
+
+    function handleLogin(password, email) {
+        auth.authorize(escape(password), email)
+            .then((data) => {
+            auth.getContent(data)
+                .then((res) => {
+                setEmail(res.data.email);
+                })
+                .catch(err => console.log(err));
+            setLoggedIn(true);
+            setMessage({ iconPath: accessiblePath, text: 'Вы успешно вошли в приложение!' });
+            history.push('/');
+            })
+            .catch((err) => setMessage({ iconPath: notAccessiblePath, text: err.message }))
+        setInfoTooltipOpen(true);
+        }
+
+     
+    function handleSignOut() {
+        setLoggedIn(false);
+        localStorage.removeItem('jwt');
+        setEmail('');
+        history.push('/sign-in');
+    }
 
     function handleUpdateUser(data){
         api.setUserInfo(data)
@@ -104,24 +168,54 @@ function App() {
         setIsEditAvatarPopupOpen(false);
         setIsEditProfilePopupOpen(false);
         setIsAddPlacePopupOpen(false);
+        setInfoTooltipOpen(false);
     
         setSelectedCard(null);
     }
 
 return (
     <CurrentUserContext.Provider value={currentUser} >
-        <Route exact path ="/asd">
-            { loggedIn ? <Redirect to="/register" /> : <Redirect to="/login" /> }
-        </Route>
-        <Route exact path="/register">
-            <Register />
-        </Route>
- 
-        <Route exact path="/login">
-            <Login />
-        </Route>
-        <Route exact path="/">
-        <Header />
+        <Header 
+            loggedIn={loggedIn}
+            locaction={location}
+            email={email}
+            signOut={handleSignOut}
+            isAuthInfoOpened={isAuthInfoOpened}  
+        />
+        <Switch>
+            <ProtectedRoute exact path="/" loggedIn={loggedIn} component={Main}
+            onEditProfile={handleEditProfileClick}
+            onAddPlace={handleAddPlaceClick}
+            onEditAvatar={handleEditAvatarClick}
+            handleCardClick={handleCardClick}
+            onCardLike={handleCardLike}
+            onCardDelete={handleDeleteCard}
+         
+            cards={cards}
+            setCards={setCards}
+            onClose={closeAllPopups}
+            />
+            
+            <Route exact path ="/sign-in">
+                <Login onLogin={handleLogin} />
+            </Route>
+       
+            <Route path='/sign-up'>
+                <Register onRegister={handleRegister} />
+            </Route>
+            <Route>
+                {loggedIn ? <Redirect to="/" /> : <Redirect to="/sign-in" />}
+            </Route>
+        </Switch>
+        <Footer />
+
+    <InfoTooltip
+        isOpen={isInfoTooltipOpen}
+        onClose={closeAllPopups}
+        loggedIn={loggedIn}
+        message={message}
+        infoTooltip={true}
+    />
 
     <PopupWithForm 
         name='confirm' 
@@ -151,8 +245,7 @@ return (
     <ImagePopup 
         onClose={closeAllPopups}
         selectedCard={selectedCard}
-    />
-    </Route>   
+    />  
     </CurrentUserContext.Provider>
   );
 }
